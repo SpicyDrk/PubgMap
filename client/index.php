@@ -1,0 +1,279 @@
+
+<!doctype html>
+<html>
+    <head>
+
+        <title>SpicyBoy's PubG Map</title>
+        <style>
+            body {
+                background-color: black;
+                padding:0px;
+                margin: 0;
+            }
+            #toolBarContainer {
+                position: fixed;
+                padding: 0px;
+                width:250px; 
+                background-color:#535568;
+                height:100px;
+            }
+           #mapContainer {
+                position: fixed;
+                left: 250px;  
+                width:800px;
+                background-color:#252525;
+                height:800px;
+            }
+            
+            #map{
+                max-width: 100%;
+                height: 100%;  
+                margin:auto;
+                position: absolute;
+                min-height: 800px;
+                min-width: 800px;
+                max-height: 800px;
+                max-width: 800px;
+                background:  no-repeat center center;
+                z-index:0;
+            }
+            #heatMap{
+                max-width: 100%;
+                height: 100%;
+  
+                margin:auto;
+                position: absolute;
+                min-height: 800px;
+                min-width: 800px;
+                max-height: 800px;
+                max-width: 800px;
+                background:  no-repeat center center;
+                z-index:-1;
+                opacity: 0.4;
+            }
+            #svg{
+                float:left;
+                position: absolute;
+                max-width: 100%;
+                height: 100%;
+                display: block; 
+                margin:auto;
+                min-height: 800px;
+                min-width: 800px;
+                max-height: 800px;
+                max-width: 800px;
+            }
+            #title1{
+                width:100%;
+                height:80px;  
+            }
+            #title2{
+                width:100%;
+                border-bottom:solid;
+                border-bottom-color: black;
+                height:80px;    
+            }
+            #heatMapAlphaSlider{
+    
+            }
+            .heatmap-canvas{
+                pointer-events: none;
+            }
+            .gridSquare{
+                width=8px;
+                min-width: 8px;
+                max-width:8px;
+                max-height: 8px;
+                min-height: 8px;
+                float:left;
+                overflow:scroll;
+                z-index:100;
+                font-size:4px; 
+                background-color: aliceblue;
+                
+            }
+            #pin{
+                display:none;
+                position: absolute;
+                width: 20px;
+                height:30px;
+                z-index: 999;
+            }
+            #heatmapSelector{
+                color:coral;
+            }
+            .orangeStyleText{
+                color:darkorange;
+                text-decoration-style: solid;
+            }
+            #testButton{
+                width:200px;
+                text-decoration-style: solid;
+            }
+            #dropDistanceSlider{
+                margin-top: 10px;
+                
+            }
+            .buttonDiv{
+                padding-top:20px;
+                padding-left: 20px;
+                
+            }
+            #sliderDiv{
+                padding-top:30px;
+                padding-left: 20px;
+                padding-right: 130px;
+            }
+            #custom-handle {
+                width: 3em;
+                height: 1.6em;
+                top: 50%;
+                margin-top: -.8em;
+                text-align: center;
+                line-height: 1.6em;
+          }
+            #heatmapAlpha{
+                position: absolute;
+                left: 820px;
+                top: 100px;
+                   
+                width:200px;
+            }
+            #heatmapAlphaText{
+                position: absolute;
+                left: 820px;
+                top: 70px;
+                height:400px;      
+                color:white;
+            }
+        </style>
+        <script src="../jquery-3.2.1.min.js"></script>
+        <script src="../jquery-ui/jquery-ui.js"></script>
+        <script src="../heatmap.js-2.0.5/build/heatmap.min.js"></script>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+       
+        <meta charset="utf-8" />
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta http-equiv="pragma" content="no-cache">
+        <meta http-equiv="expires" content="-1">
+
+    </head>
+    <body>
+        <div id="toolBarContainer">
+            <img src="../images/title1.png" id="title1">
+            <img src="../images/title2.png" id="title2">
+            <div class="buttonDiv">
+                <div class="orangeStyleText">Team Name (required)</div>
+                <label for="teamName" class="orangeStyleText"></label>
+                <input type="text" name="teamName" id="teamName" value="yaya">
+            </div>
+            <div class="buttonDiv">
+                <button id="submitTeamName">Submit Team Name</button>
+            </div>
+            <div>
+                
+            </div>
+            
+        </div>
+
+        <div id="mapContainer">
+            <img src="../images/map2smaller.jpg" id="map">  
+            <!--img src="images/heatmapLit.png" id="heatMap">-->
+             <svg id="svg" >
+                <line id="transLine" x1="0" y1="0" x2="0" y2="0" style="stroke:#ff8e05;stroke-width:6;stroke-opacity:0.6" stroke-dasharray="5,5" />
+                <line id="line" x1="0" y1="0" x2="0" y2="0" style="stroke:rgb(255,255,255);stroke-width:6;stroke-opacity:1" />
+                <line id="wideLine" x1="0" y1="0" x2="0" y2="0" style="display:none;stroke:rgb(100,100,255);stroke-width:150;stroke-opacity:0.2;z-index:-1;" stroke-linecap='round' />   
+            </svg> 
+            <img src="../images/redPin.png" id="pin">
+        </div>
+
+        <script>
+            //might change later, storing toolbar widths as string and number
+            //var h337;
+            var toolBarWidth="350px";
+            var toolBarWidthNum="350";
+            
+            var teamNameSubmitted=false;
+            var listening=false;
+            var timeDelay=2000;
+            var pin;
+            
+            
+            $.urlParam = function(name){
+                var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+                if (results==null){
+                   return null;
+                }
+                else{
+                   return decodeURI(results[1]) || 0;
+                }
+            }
+            var teamName = $.urlParam('tn');
+            
+            //var userClickedOnce=false;
+            $(document).ready(function(){
+                sizeWindow();
+                 $.ajaxSetup({ cache: false });
+                $("#teamName").attr("value", teamName);
+            });
+            
+            function sizeWindow(){
+                //main Divs
+                $("#toolBarContainer").css("height", $(window).height());
+                $("#mapContainer").css("height", $(window).height());
+                $("#toolBarContainer").css("width",toolBarWidth);
+                $("#mapContainer").css("width", $(window).width()-$("#toolBarContainer").width());
+                $("#mapContainer").css("left",toolBarWidth);
+            }
+            
+            //console.log($_GET["teamm"])
+            
+            
+            function placePin(pinArray){
+                pinloc = pinArray[0];
+                $("#pin").css("left", pinloc.x);
+                $("#pin").css("top", pinloc.y);
+                $("#pin").css("display", "inline");
+            }
+            
+            $( function() {
+                 $("#submitTeamName").click(function(){                     
+                     teamName=$("#teamName").val();                     
+                        if (teamName !== ''){                            
+                                if (!listening){  
+                                    
+                                    listening=true;                                    
+                                    console.log('now listening to server')                                    
+                                    pingTeamFolder(teamName);                                    
+                                    
+                                };
+                            } else {
+                                
+                                alert('Please type in a team name <3')
+                                
+                            }                       
+                });
+            });
+              
+            
+            function pingTeamFolder(){
+                var folderLocation='../TeamNames/'+teamName+'/pin.json';
+                
+                $(function(){
+                    $.getJSON(folderLocation,function(data){
+                        pin=data;
+                        placePin(pin);
+                        
+                    });                
+                });
+                if(listening){
+                    setTimeout(pingTeamFolder,5000);
+                }
+            }
+            
+
+            
+        </script>
+    </body>
+</html>

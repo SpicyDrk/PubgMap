@@ -1,0 +1,13 @@
+[20-Oct-2017 10:12:03 America/New_York] PHP Warning:  fopen(TeamNames/TeamSquad/pin.json): failed to open stream: No such file or directory in /home/briaxgxp/public_html/PubgMap/saveJSON.php on line 9
+[20-Oct-2017 10:12:03 America/New_York] PHP Warning:  mkdir(): File exists in /home/briaxgxp/public_html/PubgMap/createFolder.php on line 6
+[20-Oct-2017 10:13:55 America/New_York] PHP Parse error:  syntax error, unexpected '}', expecting ',' or ';' in /home/briaxgxp/public_html/PubgMap/createFolder.php on line 9
+[20-Oct-2017 10:14:10 America/New_York] PHP Warning:  mkdir(): File exists in /home/briaxgxp/public_html/PubgMap/createFolder.php on line 6
+[20-Oct-2017 10:14:58 America/New_York] PHP Warning:  mkdir(): File exists in /home/briaxgxp/public_html/PubgMap/createFolder.php on line 6
+[20-Oct-2017 13:59:22 America/New_York] PHP Warning:  mkdir(): File exists in /home/briaxgxp/public_html/PubgMap/createFolder.php on line 6
+[20-Oct-2017 14:56:37 America/New_York] PHP Warning:  mkdir(): File exists in /home/briaxgxp/public_html/PubgMap/createFolder.php on line 6
+[20-Oct-2017 15:10:04 America/New_York] PHP Warning:  fopen(TeamNames/big rocks/pin.json): failed to open stream: No such file or directory in /home/briaxgxp/public_html/PubgMap/saveJSON.php on line 9
+[20-Oct-2017 15:10:04 America/New_York] PHP Warning:  mkdir(): File exists in /home/briaxgxp/public_html/PubgMap/createFolder.php on line 6
+[20-Oct-2017 15:16:01 America/New_York] PHP Warning:  mkdir(): File exists in /home/briaxgxp/public_html/PubgMap/createFolder.php on line 6
+[20-Oct-2017 16:52:06 America/New_York] PHP Warning:  mkdir(): File exists in /home/briaxgxp/public_html/PubgMap/createFolder.php on line 6
+[20-Oct-2017 19:00:47 America/New_York] PHP Warning:  fopen(TeamNames/bobs/pin.json): failed to open stream: No such file or directory in /home/briaxgxp/public_html/PubgMap/saveJSON.php on line 9
+[20-Oct-2017 19:00:47 America/New_York] PHP Warning:  mkdir(): File exists in /home/briaxgxp/public_html/PubgMap/createFolder.php on line 6

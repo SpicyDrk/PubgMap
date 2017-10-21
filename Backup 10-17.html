@@ -1,0 +1,410 @@
+
+<!doctype html>
+<html>
+    <head>
+
+        <title>Dorks Dope Drop </title>
+        <style>
+            body {
+                background-color: black;
+                padding:0px;
+                margin: 0;
+            }
+            #toolBarContainer {
+                position: fixed;
+                padding: 0px;
+                width:250px; 
+                background-color:#535568;
+                height:100px;
+            }
+           #mapContainer {
+                position: fixed;
+                left: 250px;  
+                width:800px;
+                background-color:#252525;
+                height:800px;
+            }
+            
+            #map{
+                max-width: 100%;
+                height: 100%;
+  
+                margin:auto;
+                position: absolute;
+                min-height: 800px;
+                min-width: 800px;
+                max-height: 800px;
+                max-width: 800px;
+                background:  no-repeat center center;
+                z-index:0;
+            }
+            #heatMap{
+                max-width: 100%;
+                height: 100%;
+  
+                margin:auto;
+                position: absolute;
+                min-height: 800px;
+                min-width: 800px;
+                max-height: 800px;
+                max-width: 800px;
+                background:  no-repeat center center;
+                z-index:-1;
+                opacity: 0.4;
+            }
+            #svg{
+                float:left;
+                position: absolute;
+                max-width: 100%;
+                height: 100%;
+                display: block; 
+                margin:auto;
+                min-height: 800px;
+                min-width: 800px;
+                max-height: 800px;
+                max-width: 800px;
+            }
+            #title1{
+                width:100%;
+                height:80px;  
+            }
+            #title2{
+                width:100%;
+                border-bottom:solid;
+                border-bottom-color: black;
+                height:80px;    
+            }
+            #heatMapAlphaSlider{
+    
+            }
+            .heatmap-canvas{
+                pointer-events: none;
+            }
+            .gridSquare{
+                width=8px;
+                min-width: 8px;
+                max-width:8px;
+                max-height: 8px;
+                min-height: 8px;
+                float:left;
+                overflow:scroll;
+                z-index:100;
+                font-size:4px; 
+                background-color: aliceblue;
+                
+            }
+        </style>
+        <script src="jquery-3.2.1.min.js"></script>
+        <script src="jquery-ui/jquery-ui.js"></script>
+        <script src="/heatmap.js-2.0.5/build/heatmap.min.js"></script>
+        <meta charset="utf-8" />
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    </head>
+    <body>
+        <div id="toolBarContainer">
+            <img src="images/title1.png" id="title1">
+            <img src="images/title2.png" id="title2">
+            <button id="testButton">Test Button</button>
+            <label for="heatMapSelector"> Select a drop Style</label>
+            <select name="heatMapSelector" id="heatMapSelector">
+                    <option selected="selected">Aggressive Drop(lit)</option>
+                    <option>Normal Drop</option>
+                    <option>100% random Drop</option>
+            </select>
+                
+        </div>
+        <div id="mapContainer">
+            <img src="images/map2.jpg" id="map">  
+            <img src="images/heatmapLit.png" id="heatMap">
+             <svg id="svg" >
+                <line id="transLine" x1="0" y1="0" x2="0" y2="0" style="stroke:#ff8e05;stroke-width:6;stroke-opacity:0.6" stroke-dasharray="5,5" />
+                <line id="line" x1="0" y1="0" x2="0" y2="0" style="stroke:rgb(255,255,255);stroke-width:6;stroke-opacity:1" />
+                <line id="wideLine" x1="0" y1="0" x2="0" y2="0" style="display:none;stroke:rgb(100,100,255);stroke-width:150;stroke-opacity:0.2;z-index:-1;" stroke-linecap='round' />                
+            </svg> 
+            
+        </div>
+
+        <script>
+            //might change later, storing toolbar widths as string and number
+            var toolBarWidth="350px";
+            var toolBarWidthNum="350"
+            var x1=0;
+            var y1=0;
+            var x2=0;
+            var y2=0;
+            var mouseHoldDown=false;
+
+            //var userClickedOnce=false;
+            $(document).ready(function(){
+                sizeWindow();
+            });
+            
+            function sizeWindow(){
+                //main Divs
+                $("#toolBarContainer").css("height", $(window).height());
+                $("#mapContainer").css("height", $(window).height());
+                $("#toolBarContainer").css("width",toolBarWidth);
+                $("#mapContainer").css("width", $(window).width()-$("#toolBarContainer").width());
+                $("#mapContainer").css("left",toolBarWidth);
+            }
+            
+            //mouse press event for line
+            $("svg").mousedown(function(event){
+                $("#line").css("display", "none");
+                $("#wideLine").css("display", "none");
+                x1 = event.clientX;
+                y1 = event.clientY;
+                //console.log(x1+"x "+ y1 +"y");
+                $("#line").attr("x1",(x1-toolBarWidthNum));
+                $("#line").attr("y1",(y1));
+                mouseHoldDown=true;                
+            });           
+
+            //Mouse release event for line
+            $("svg").mouseup(function(event){
+                var x2 = event.clientX;
+                var y2 = event.clientY;
+                //console.log(x2+"x "+ y2 +"y");
+                $("#line").attr("x2",(x2-toolBarWidthNum));
+                $("#line").attr("y2",(y2));                        
+                $("#line").css("display", "inline");               
+                createWideLine(x1,y1,x2,y2);
+                extendLine(x1,y1,x2,y2);          
+                mouseHoldDown=false;
+            });
+            
+
+            
+            //Generate line as you hold
+             $("svg").mousemove(function(event){
+                     if (mouseHoldDown==true){
+                        var x2 = event.clientX;
+                        var y2 = event.clientY;
+                        //console.log(x2+"x "+ y2 +"y");
+                        $("#line").attr("x2",(x2-toolBarWidthNum));
+                        $("#line").attr("y2",(y2));                        
+                        $("#line").css("display", "inline");
+                        extendTransLine(x1,y1,x2,y2);
+                        findMouse(x2,y2);
+                 }
+                 
+             })
+            
+            function createWideLine(x1,y1,x2,y2){
+                if(x1==x2){
+                    x2++;
+                };  
+                slope=((y2-y1))/(x2-x1);
+                yIntercept1=y1-((x1-toolBarWidthNum)*slope);          
+                $("#wideLine").attr("x1",(0));
+                $("#wideLine").attr("y1",(yIntercept1));
+                yIntercept2=y1-((x1-toolBarWidthNum-800)*slope);
+                $("#wideLine").attr("x2",(800));
+                $("#wideLine").attr("y2",(yIntercept2));
+                $("#wideLine").css("display","inline");
+            }
+            
+            function extendTransLine(x1,y1,x2,y2){
+                if(x1==x2){
+                    x2++;
+                };  
+                slope=((y2-y1))/(x2-x1);
+                yIntercept1=y1-((x1-toolBarWidthNum)*slope);          
+                $("#transLine").attr("x1",(0));
+                $("#transLine").attr("y1",(yIntercept1));
+                yIntercept2=y1-((x1-toolBarWidthNum-800)*slope);
+                $("#transLine").attr("x2",(800));
+                $("#transLine").attr("y2",(yIntercept2));
+                $("#transLine").css("display","inline");
+            }
+            
+            
+            function extendLine(x1,y1,x2,y2){
+                if(x1==x2){
+                    x2++;
+                };
+                slope=((y2-y1))/(x2-x1);
+                yIntercept1=y1-((x1-toolBarWidthNum)*slope);
+                $("#line").attr("x1",(0));
+                $("#line").attr("y1",(yIntercept1));                
+                yIntercept2=y1-((x1-toolBarWidthNum-800)*slope);                
+                //set (x2,y2) to 2ndpoint
+                $("#line").attr("x2",(800));
+                $("#line").attr("y2",(yIntercept2));                
+                //hide transpartentline
+                $("#transLine").css("display","none");                
+                
+            };
+            
+            //resize
+            $(window).resize(function(){
+                sizeWindow();
+            });
+            
+            //jsonSTUFF?
+            
+            //Heatmap/JSON Loads
+            var heatmapLit;
+            $(function(){
+                $.getJSON('json/heatmapLit.json',function(data){
+                    heatmapLit=data; 
+                   // validPoints(1500,heatmapLit)
+                
+                });                
+            });
+
+            var heatmapNormal;
+            $(function(){
+                $.getJSON('json/heatmapNormal.json',function(data){
+                    heatmapNormal=data; 
+                });                
+            });
+            
+            var heatmapRandom;
+            $(function(){
+                $.getJSON('json/heatmapRandom.json',function(data){
+                    heatmapRandom=data;                     
+                });                
+            });
+            
+
+            function generateHeatMap(d){
+                //configuration
+
+                expandedD=expandPointsToPixels(d);
+ 
+                var config = {
+                container: document.getElementById('mapContainer'),
+                radius: 12,   
+                maxOpacity: 100,
+                minOpacity: 0,
+                blur: 0.76,   
+                };
+                var heatmapInstance = h337.create(config);
+                var data = {
+                    max:255,
+                    min:0,
+                    data:expandedD,
+                };
+
+                
+                heatmapInstance.setData(data);
+            };
+            
+            //draw squares for testing over the 
+
+            
+            function findMouse(x,y){
+                gridX = Math.ceil((x-350)/10)
+                gridY = Math.ceil((y)/10)
+
+                return({x:gridX,
+                       y:gridY})
+            }
+            
+            function measureDistanceEachSqaure(mm, xx, bb){
+                //get 10 points along line
+                //y=slope(x)+(y intercept)
+                currentHeatMap=heatmapLit;
+                
+                points=currentHeatMap;
+                
+                slope=getSlopeOfLine();
+                
+                slopeInverse= -1*(1/getSlopeOfLine());
+                
+                
+                //get points along line
+                testPoints=[];
+                lineXPoints=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+                for (i=0 ; i<lineXPoints.length ; i++){
+                    y= -1*( slope * lineXPoints[i]*50 - $("#line").attr("y1"));
+                    testPoints.push({"x":(lineXPoints[i]*50),"y":y})
+                }                
+                
+            
+                maxJumpDistance=1000
+                for (i=0 ; i<testPoints.length ;  i++){
+                    
+                    x1=testPoints[i].x
+                    y1=testPoints[i].y
+                    
+                    for (j=(points.length-1); j>0 ; j--){                       
+                        
+                        //points to pixils
+                        x2 = points[j].x*10;
+                        y2 = points[j].y*10;
+                        
+                        //find the distance between the test points on line and the points on the map
+                        distance = distanceBetweenPoints(x1,y1,x2,y2);
+                        
+                        //adding distane to the value of the point if it's the smallest
+                        if (distance <  points[j].distance || typeof points[j].distance === 'undefined'){
+                            points[j].distance=distance
+                        }
+                         
+                        if (distance<=maxJumpDistance){
+                            if (points[j].value !=0){
+                                points[j].value= points[j].value+255
+                            }
+                        }
+                    }
+            
+                    
+                }
+                //remove ones with distances > max distance
+                points =removeFarDistance(maxJumpDistance, points)
+                
+                //generate heatmap
+                generateHeatMap(points)
+                
+            }
+            
+            
+            //*****************************BUTTONS*****************************************
+            $("#testButton").click(function(){
+                measureDistanceEachSqaure();
+            })
+            
+            $()
+            //*****************************BUTTONS*****************************************
+            function expandPointsToPixels(d){
+                for (i=0; i<d.length ; i++){
+                    d[i].x = d[i].x*10
+                    d[i].y = d[i].y*10
+                }
+                console.log(d)
+                return(d)
+            }
+            
+            //for
+            function getSlopeOfLine(e){     
+                y2=$("#line").attr("y2");
+                y1=$("#line").attr("y1");
+                slope = (y1-y2)/800;
+                //console.log(slope);
+                return(slope)
+            }
+            
+            function removeFarDistance(maxJumpDistance, points){
+                for (i=0 ; i<points.length ; i++){
+                    if(points[i].distance > maxJumpDistance){
+                        points[i].value=0;
+                    };
+                };
+                return(points);
+            }
+
+            
+            function distanceBetweenPoints(x1,y1,x2,y2){
+                dx=x2-x1
+                dy=y2-y1                
+                distance =  Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2))
+                return(distance)
+            }
+            
+        </script>
+    </body>
+</html>
