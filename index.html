@@ -615,7 +615,7 @@
                 if(teamName!==""){                
                     $.ajax({
                         method: 'POST',
-                        url: 'https://brian.games/PubgMap/createFolder.php',
+                        url: 'createFolder.php',
                         data: {folderName: teamName},
                         success: function(teamName) {
                         } 
@@ -625,7 +625,7 @@
                         type: "POST",
                         dataType : 'json',
                         async: false,
-                        url: 'https://brian.games/PubgMap/saveJSON.php',
+                        url: 'saveJSON.php',
                         data: { data: JSON.stringify(dataSend) }
                     });
                 }
